@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ashish19912009/zippyrail/account/pb/github.com/ashish19912009/zippyrail/account/pb"
+	"github.com/ashish19912009/zippyrail/account/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
