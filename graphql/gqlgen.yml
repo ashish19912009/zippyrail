@@ -1,0 +1,8 @@
+schema: schema.graphql
+
+models:
+  Account:
+    model:  github.com/ashish19912009/zippyrail/graphql.Account
+    fields:
+      orders:
+        resolver: true
