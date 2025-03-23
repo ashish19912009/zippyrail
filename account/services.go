@@ -7,8 +7,8 @@ import (
 )
 
 type Service interface {
-	PostAccount(ctx context.Context, mobileNo uint64) (*Account, error)
-	UpdateAccount(ctx context.Context, mobileNo uint64, name string) (*Account, error)
+	PostAccount(ctx context.Context, mobileNo string) (*Account, error)
+	UpdateAccount(ctx context.Context, mobileNo string, name string) (*Account, error)
 	GetAccount(ctx context.Context, id string) (*Account, error)
 	GetAccounts(ctx context.Context, skip uint64, take uint64) ([]*Account, error)
 }
@@ -27,7 +27,7 @@ func NewService(r Repository) Service {
 	return &accountService{r}
 }
 
-func (s *accountService) PostAccount(ctx context.Context, mobileNo uint64) (*Account, error) {
+func (s *accountService) PostAccount(ctx context.Context, mobileNo string) (*Account, error) {
 	a := &Account{
 		MobileNo: mobileNo,
 		ID:       ksuid.New().String(),
@@ -38,7 +38,7 @@ func (s *accountService) PostAccount(ctx context.Context, mobileNo uint64) (*Acc
 	return a, nil
 }
 
-func (s *accountService) UpdateAccount(ctx context.Context, mobileNo uint64, name string) (*Account, error) {
+func (s *accountService) UpdateAccount(ctx context.Context, mobileNo string, name string) (*Account, error) {
 	a := &Account{
 		Name:     name,
 		MobileNo: mobileNo,
@@ -57,14 +57,19 @@ func (s *accountService) GetAccount(ctx context.Context, id string) (*Account, e
 	return account, nil
 }
 
-func (s *accountService) GetAccounts(ctx context.Context, skip uint64, take uint64) ([]Account, error) {
+func (s *accountService) GetAccounts(ctx context.Context, skip uint64, take uint64) ([]*Account, error) {
 
 	if take > 100 || (skip == 0 && take == 0) {
 		take = 100
 	}
-	accounts, err := s.repository.ListAccounts(ctx, skip, take)
+	accountValues, err := s.repository.ListAccounts(ctx, skip, take)
 	if err != nil {
 		return nil, err
+	}
+
+	accounts := make([]*Account, 0, len(accountValues))
+	for i := range accountValues {
+		accounts = append(accounts, &accountValues[i])
 	}
 	return accounts, nil
 }

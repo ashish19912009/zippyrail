@@ -11,6 +11,7 @@ import (
 )
 
 type grpcServer struct {
+	pb.UnimplementedAccountServiceServer
 	service Service
 }
 
@@ -20,34 +21,37 @@ func ListenGRPC(s Service, port int) error {
 		return err
 	}
 	serv := grpc.NewServer()
-	pb.RegisterAccountServiceServer(serv, &grpcServer{s})
+	pb.RegisterAccountServiceServer(serv, &grpcServer{
+		UnimplementedAccountServiceServer: pb.UnimplementedAccountServiceServer{},
+		service:                           s,
+	})
 	reflection.Register(serv)
 	return serv.Serve(lis)
 }
 
 func (s *grpcServer) PostAccount(ctx context.Context, r *pb.PostAccountRequest) (*pb.PostAccountResponse, error) {
-	a, err := s.service.PostAccount(ctx, r.mobileNo)
+	a, err := s.service.PostAccount(ctx, r.MobileNo)
 	if err != nil {
 		return nil, err
 	}
 	return &pb.PostAccountResponse{
 		Account: &pb.Account{
-			ID:       a.ID,
-			mobileNo: a.MobileNo,
+			Id:       a.ID,
+			MobileNo: a.MobileNo,
 		},
 	}, nil
 }
 
 func (s *grpcServer) UpdateAccount(ctx context.Context, r *pb.UpdateAccountRequest) (*pb.UpdateAccountResponse, error) {
-	a, err := s.service.UpdateAccount(ctx, r.mobileNo, r.Name)
+	a, err := s.service.UpdateAccount(ctx, r.MobileNo, r.Name)
 	if err != nil {
 		return nil, err
 	}
 	return &pb.UpdateAccountResponse{
 		Account: &pb.Account{
-			ID:       a.ID,
-			mobileNo: a.MobileNo,
-			name:     a.Name,
+			Id:       a.ID,
+			MobileNo: a.MobileNo,
+			Name:     a.Name,
 		},
 	}, nil
 }
@@ -59,15 +63,15 @@ func (s *grpcServer) GetAccount(ctx context.Context, r *pb.GetAccountRequest) (*
 	}
 	return &pb.GetAccountResponse{
 		Account: &pb.Account{
-			ID:       a.ID,
-			mobileNo: a.MobileNo,
-			name:     a.Name,
+			Id:       a.ID,
+			MobileNo: a.MobileNo,
+			Name:     a.Name,
 		},
 	}, nil
 }
 
 func (s *grpcServer) GetAccounts(ctx context.Context, r *pb.GetAccountsRequest) (*pb.GetAccountsResponse, error) {
-	res, err := s.service.GetAccounts(ctx, r.skip, r.take)
+	res, err := s.service.GetAccounts(ctx, r.Skip, r.Take)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +79,7 @@ func (s *grpcServer) GetAccounts(ctx context.Context, r *pb.GetAccountsRequest) 
 	for _, p := range res {
 		accounts = append(accounts,
 			&pb.Account{
-				ID:       p.ID,
+				Id:       p.ID,
 				MobileNo: p.MobileNo,
 				Name:     p.Name,
 			})
